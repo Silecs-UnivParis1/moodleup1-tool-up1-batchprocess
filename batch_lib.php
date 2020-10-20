@@ -9,7 +9,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once $CFG->libdir . '/custominfo/lib.php';
 require_once $CFG->dirroot . '/local/up1_courselist/courselist_tools.php';
 
 /* @var $DB moodle_database */
@@ -171,31 +170,36 @@ function get_courses_batch_search($criteria, $sort='fullname ASC', $page=0, $rec
     }
 
     // custominfo fields
-    $inputFields = array();
+    $inputFields = [];
+    
     foreach ($criteria as $c => $v) {
-        if (preg_match('/^profile_field_(.+)$/', $c, $m) && $v !== '') {
-            $inputFields[$m[1]] = $v;
+        if (preg_match('/^up1(.+)$/', $c, $m) && $v !== '') {
+            $inputFields[$c] = $v;
         }
     }
     if ($inputFields) {
-        $fields = $DB->get_records('custom_info_field', array('objectname' => 'course'));
-        if ($fields) {
-            $i = 0;
-            foreach ($fields as $field) {
-                // hack to speed up things
-                if (empty($inputFields[$field->shortname])) {
-                    continue;
-                }
-                $i++;
-                // normal behaviour
-                $formfield = custominfo_field_factory('course', $field->datatype, $field->id, null);
-                $formfield->edit_data($criteria);
-                $searchjoin[] = "JOIN {custom_info_data} d$i "
-                    ."ON (d$i.objectid = c.id AND d$i.objectname='course' AND d$i.fieldid={$field->id})";
-                $searchcond[] = $DB->sql_like("d$i.data", ":dd$i", false, true, false);
-                $params['dd'.$i] = "%{$formfield->data}%";
-            }
-        }
+		$customfield_categories = $DB->get_records_menu('customfield_category', ['area' => 'course'], '', 'id, name');
+		if ($customfield_categories) {
+			$fields = $DB->get_records_list('customfield_field', 'categoryid', array_keys($customfield_categories));
+			if ($fields) {
+				$i = 0;
+				foreach ($fields as $field) {
+					// hack to speed up things
+					if (empty($inputFields[$field->shortname])) {
+						continue;
+					}
+					$i++;
+					$searchvalue = $inputFields[$field->shortname];
+					if ($field->type == 'date') {
+						$searchvalue = isoDateToTs($searchvalue);
+					}
+					$searchjoin[] = "JOIN {customfield_data} d$i "
+						."ON (d$i.instanceid = c.id AND d$i.fieldid={$field->id})";
+					$searchcond[] = $DB->sql_like("d$i.value", ":dd$i", false, true, false);
+					$params['dd'.$i] = "%{$searchvalue}%";
+				}
+			}
+		}
     }
 
     // category

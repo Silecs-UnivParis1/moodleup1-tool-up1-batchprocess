@@ -14,7 +14,6 @@ defined('MOODLE_INTERNAL') || die;
 /* @var $DB moodle_database */
 
 require_once($CFG->libdir . '/formslib.php');
-require_once($CFG->libdir . '/custominfo/lib.php');
 
 class course_batch_search_form extends moodleform {
     /**
@@ -68,7 +67,6 @@ class course_batch_search_form extends moodleform {
         $mform->setType('category', PARAM_INT);
 
         // Next the customisable fields
-        $this->custominfo = new custominfo_form_extension('course');
         if (empty($this->_customdata['fields']) || $this->_customdata['fields'] === '*') {
             $fields_by_cat = self::getFieldsFromCategories(array());
         } else {
@@ -87,19 +85,22 @@ class course_batch_search_form extends moodleform {
                 $mform->addElement('header', 'category_'.$catid, format_string($catname));
                 foreach ($fields as $field) {
                     // do not display the normal field when a search criteria is expected
-                    if (in_array($field->datatype, array('datetime', 'textarea'))) {
-                        $field->param1 = '';
-                        $field->param2 = '';
-                        $field->param3 = '';
-                        $field->datatype = 'text';
+                    
+                    if (in_array($field->type, ['textarea'])) {
+                        $field->type = 'text';
                     }
-                    //var_dump($field); die();
-                    // add the custom field
-                    $formfield = custominfo_field_factory('course', $field->datatype, $field->id);
-                    $formfield->load_data($field);
-                    $formfield->options[''] = '';
-                    $formfield->edit_field($mform);
-                    $mform->setDefault($formfield->inputname, '');
+                    
+                    if ($field->type == 'text') {
+						$mform->addElement($field->type, $field->shortname, $field->name, 'maxlength="254" size="50"');
+						$mform->setType($field->shortname, PARAM_MULTILANG);
+					}
+					if ($field->type == 'checkbox') {
+						$mform->addElement($field->type, $field->shortname, $field->name);
+					}
+					if ($field->type == 'date') {
+						$mform->addElement('text', $field->shortname, $field->name, 'maxlength="254" size="50"');
+						$mform->setType($field->shortname, PARAM_MULTILANG);
+					}
                 }
             }
         }
@@ -143,9 +144,9 @@ class course_batch_search_form extends moodleform {
     private static function getFieldsFrom($cond, $params) {
         global $DB;
         $sql = "SELECT f.*, c.name AS catname "
-                . "FROM {custom_info_field} f "
-                . "JOIN {custom_info_category} c on f.categoryid = c.id "
-                . "WHERE f.objectname = 'course' " . ($cond ? "AND ($cond) " : "")
+                . "FROM {customfield_field} f "
+                . "JOIN {customfield_category} c ON f.categoryid = c.id "
+                . "WHERE c.area = 'course' " . ($cond ? "AND ($cond) " : "")
                 . "ORDER BY c.sortorder, f.sortorder";
         $fields = $DB->get_records_sql($sql, $params);
         $by_categoryId = array();
