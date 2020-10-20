@@ -11,8 +11,8 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->version   = 2014041603;        // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2012061700;        // Requires this Moodle version
+$plugin->version   = 2020100300;        // The current plugin version (Date: YYYYMMDDXX)
+$plugin->requires  = 2020060900;        // Requires this Moodle version
 $plugin->component = 'tool_up1_batchprocess'; // Full name of the plugin (used for diagnostics)
 
 $plugin->cron      = 0;
@@ -20,7 +20,8 @@ $plugin->maturity  = MATURITY_ALPHA;
 $plugin->release   = 'TODO';
 
 $plugin->dependencies = array(
-    'local_up1_metadata' => 2013090900,
+    'local_up1_metadata' => 2020100300,
+    'local_up1_courselist' => 2020100300,
 );
 
 /** WARNING modifications into core :
