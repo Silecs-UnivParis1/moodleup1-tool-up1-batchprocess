@@ -17,7 +17,7 @@ require_once(__DIR__ . '/batch_libactions.php');
 require_once(__DIR__ . '/locallib.php');
 global $DB, $PAGE;
 
-$actionchecks = optional_param('actioncheck', array(), PARAM_RAW);
+$actionchecks = optional_param_array('actioncheck', array(), PARAM_RAW);
 $coursesid = optional_param_array('c', array(), PARAM_INT);  // which courses to act on
 $page      = optional_param('page', 0, PARAM_INT);     // which page to show
 $perpage   = optional_param('perpage', 100, PARAM_INT); // how many per page
