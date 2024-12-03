@@ -20,13 +20,13 @@ require_once $CFG->dirroot . '/local/up1_courselist/courselist_tools.php';
  * @global object
  * @global object
  * @param array $criteria An assoc array of search criteria
+ * @param int $totalcount Passed in by reference.
  * @param string $sort A field and direction to sort by
  * @param int $page The page number to get
  * @param int $recordsperpage The number of records per page
- * @param int $totalcount Passed in by reference.
  * @return object {@link $COURSE} records
  */
-function get_courses_batch_search($criteria, $sort='fullname ASC', $page=0, $recordsperpage=50, &$totalcount) {
+function get_courses_batch_search($criteria, &$totalcount, $sort='fullname ASC', $page=0, $recordsperpage=50) {
     global $CFG, $DB;
 
     $search = trim(strip_tags($criteria->search)); // trim & clean raw searched string

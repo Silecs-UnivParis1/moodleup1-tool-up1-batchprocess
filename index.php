@@ -114,7 +114,7 @@ $totalcount = 0;
 $courses = null;
 if ($data) {
     $limit = $data->limitresults;
-    $courses = get_courses_batch_search($data, "c.fullname ASC", $page, $limit, $totalcount);
+    $courses = get_courses_batch_search($data, $totalcount, "c.fullname ASC", $page, $limit);
 } else if ($coursesid) {
     $courses = $DB->get_records_list('course', 'id', $coursesid);
 }
